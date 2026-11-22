@@ -27,16 +27,6 @@
       "compilerOptions": {
         "tsConfigPath": "apps/kyb-mock/tsconfig.app.json"
       }
-    },
-    "worker": {
-      "type": "application",
-      "root": "apps/api",
-      "entryFile": "worker",
-      "sourceRoot": "apps/api/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/api/tsconfig.app.json",
-        "deleteOutDir": false
-      }
     }
   }
 }
