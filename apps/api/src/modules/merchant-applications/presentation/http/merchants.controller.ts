@@ -12,7 +12,21 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiAcceptedResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+  ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../../../identity/decorators/current-user.decorator.js';
 import { JwtGuard } from '../../../identity/guards/jwt.guard.js';
 import { RolesGuard } from '../../../identity/guards/roles.guard.js';
@@ -32,6 +46,8 @@ import { FieldEncryptionService } from '../../infrastructure/services/field-encr
 import { UpdateApplicationDto } from './dtos/update-application.dto.js';
 import { RecordDecisionDto } from './dtos/record-decision.dto.js';
 import { AssignReviewerDto } from './dtos/assign-reviewer.dto.js';
+import { MerchantApplicationResponseDto } from './dtos/responses/merchant-application.response.dto.js';
+import { AuditLogResponseDto } from './dtos/responses/audit-log.response.dto.js';
 
 @ApiTags('merchants')
 @ApiBearerAuth()
@@ -55,6 +71,10 @@ export class MerchantsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @Roles(Role.SALES)
+  @ApiOperation({ summary: 'Create a new draft application', description: 'Creates a blank merchant application in DRAFT status. Only SALES users can create applications.' })
+  @ApiCreatedResponse({ type: MerchantApplicationResponseDto, description: 'Application created in DRAFT status' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
+  @ApiForbiddenResponse({ description: 'Requires SALES role' })
   async create(@CurrentUser() user: JwtPayload) {
     const app = await this.createUseCase.execute(user.sub);
     return this.encryption.maskApplication(app);
@@ -62,6 +82,12 @@ export class MerchantsController {
 
   @Get()
   @Roles(Role.SALES, Role.REVIEWER, Role.ADMIN)
+  @ApiOperation({
+    summary: 'List applications (role-scoped)',
+    description: 'Returns applications filtered by role:\n- **SALES**: own applications only\n- **REVIEWER**: all UNDER_REVIEW applications\n- **ADMIN**: all applications regardless of status or owner',
+  })
+  @ApiOkResponse({ type: [MerchantApplicationResponseDto] })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
   async list(@CurrentUser() user: JwtPayload) {
     const apps = await this.listUseCase.execute(user.sub, user.role);
     return apps.map((a) => this.encryption.maskApplication(a));
@@ -69,12 +95,23 @@ export class MerchantsController {
 
   @Get('audit-logs')
   @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get audit log entries for an application', description: 'Returns the append-only audit trail for a merchant application. Requires ADMIN role.' })
+  @ApiQuery({ name: 'entityId', required: true, description: 'Application UUID', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiOkResponse({ type: [AuditLogResponseDto] })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
+  @ApiForbiddenResponse({ description: 'Requires ADMIN role' })
   async getAuditLogs(@Query('entityId') entityId: string) {
     return this.getAuditLogsUseCase.execute(entityId);
   }
 
   @Get(':id')
   @Roles(Role.SALES, Role.REVIEWER, Role.ADMIN)
+  @ApiOperation({ summary: 'Get a single application', description: 'SALES users can only fetch their own applications. REVIEWER and ADMIN can fetch any application.' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid', description: 'Application ID' })
+  @ApiOkResponse({ type: MerchantApplicationResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
+  @ApiForbiddenResponse({ description: 'Insufficient role or application belongs to another user' })
+  @ApiNotFoundResponse({ description: 'Application not found' })
   async get(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const app = await this.getUseCase.execute(id, user.sub, user.role);
     return this.encryption.maskApplication(app);
@@ -82,6 +119,13 @@ export class MerchantsController {
 
   @Patch(':id')
   @Roles(Role.SALES)
+  @ApiOperation({ summary: 'Update draft application fields', description: 'Partially updates an application. Only the creator (SALES) can update. All fields are optional — only provided fields are changed.' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid', description: 'Application ID' })
+  @ApiBody({ type: UpdateApplicationDto })
+  @ApiOkResponse({ type: MerchantApplicationResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
+  @ApiForbiddenResponse({ description: 'Requires SALES role or application belongs to another user' })
+  @ApiNotFoundResponse({ description: 'Application not found' })
   async update(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
@@ -94,6 +138,16 @@ export class MerchantsController {
   @Post(':id/submit')
   @HttpCode(HttpStatus.ACCEPTED)
   @Roles(Role.SALES)
+  @ApiOperation({
+    summary: 'Submit application for KYB risk review',
+    description: 'Transitions the application from DRAFT (or INFO_REQUESTED) to SUBMITTED, then enqueues an async KYB check. All required fields (businessName, legalBusinessName, businessType, country, mcc, monthlyVolume) must be filled before submitting.',
+  })
+  @ApiParam({ name: 'id', type: String, format: 'uuid', description: 'Application ID' })
+  @ApiAcceptedResponse({ type: MerchantApplicationResponseDto, description: 'Submitted — KYB check enqueued' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
+  @ApiForbiddenResponse({ description: 'Requires SALES role' })
+  @ApiNotFoundResponse({ description: 'Application not found' })
+  @ApiUnprocessableEntityResponse({ description: 'Application not in submittable status or missing required fields' })
   async submit(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const app = await this.submitUseCase.execute(id, user.sub);
     return this.encryption.maskApplication(app);
@@ -101,6 +155,17 @@ export class MerchantsController {
 
   @Post(':id/decision')
   @Roles(Role.REVIEWER)
+  @ApiOperation({
+    summary: 'Record a reviewer decision (APPROVED / REJECTED / INFO_REQUESTED)',
+    description: 'Records a decision on an application in UNDER_REVIEW status. INFO_REQUESTED sends the application back to the merchant for additional information. Decision and optional notes are written to the audit log.',
+  })
+  @ApiParam({ name: 'id', type: String, format: 'uuid', description: 'Application ID' })
+  @ApiBody({ type: RecordDecisionDto })
+  @ApiOkResponse({ type: MerchantApplicationResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
+  @ApiForbiddenResponse({ description: 'Requires REVIEWER role' })
+  @ApiNotFoundResponse({ description: 'Application not found' })
+  @ApiUnprocessableEntityResponse({ description: 'Application is not in UNDER_REVIEW status' })
   async recordDecision(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
@@ -112,6 +177,13 @@ export class MerchantsController {
 
   @Post(':id/reviewer')
   @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Assign a reviewer to an application', description: 'Sets the assignedReviewerId on the application. Assignment is recorded in the audit log.' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid', description: 'Application ID' })
+  @ApiBody({ type: AssignReviewerDto })
+  @ApiOkResponse({ type: MerchantApplicationResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
+  @ApiForbiddenResponse({ description: 'Requires ADMIN role' })
+  @ApiNotFoundResponse({ description: 'Application not found' })
   async assignReviewer(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
@@ -123,6 +195,13 @@ export class MerchantsController {
 
   @Post(':id/retry-risk')
   @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Retry a failed KYB risk review', description: "Resets riskStatus from FAILED to PENDING and re-enqueues the KYB job. The application's riskStatus must currently be FAILED. Recorded in the audit log." })
+  @ApiParam({ name: 'id', type: String, format: 'uuid', description: 'Application ID' })
+  @ApiOkResponse({ type: MerchantApplicationResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
+  @ApiForbiddenResponse({ description: 'Requires ADMIN role' })
+  @ApiNotFoundResponse({ description: 'Application not found' })
+  @ApiUnprocessableEntityResponse({ description: 'Risk review is not in FAILED state' })
   async retryRisk(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     const app = await this.retryRiskUseCase.execute(id, user.sub);
     return this.encryption.maskApplication(app);

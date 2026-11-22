@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Role } from '../../domain/role.enum.js';
 import { User } from '../../domain/user.js';
 import { UserRepository } from '../../application/ports/user.repository.port.js';
 import { UserEntity } from '../entities/user.entity.js';
@@ -15,5 +16,10 @@ export class UserTypeOrmRepository implements UserRepository {
 
   async findById(id: string): Promise<User | null> {
     return this.repo.findOneBy({ id });
+  }
+
+  async create(email: string, passwordHash: string, role: Role): Promise<User> {
+    const entity = this.repo.create({ email, passwordHash, role });
+    return this.repo.save(entity);
   }
 }

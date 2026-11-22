@@ -6,6 +6,7 @@ import { PasswordHasher } from './application/ports/password-hasher.port.js';
 import { UserRepository } from './application/ports/user.repository.port.js';
 import { LoginUseCase } from './application/use-cases/login.use-case.js';
 import { RefreshUseCase } from './application/use-cases/refresh.use-case.js';
+import { RegisterUseCase } from './application/use-cases/register.use-case.js';
 import { UserEntity } from './infrastructure/entities/user.entity.js';
 import { UserTypeOrmRepository } from './infrastructure/repositories/user.typeorm.repository.js';
 import { BcryptPasswordHasher } from './infrastructure/services/bcrypt-password-hasher.js';
@@ -29,6 +30,7 @@ import { AuthController } from './presentation/http/auth.controller.js';
   providers: [
     LoginUseCase,
     RefreshUseCase,
+    RegisterUseCase,
     LocalStrategy,
     JwtStrategy,
     JwtGuard,
