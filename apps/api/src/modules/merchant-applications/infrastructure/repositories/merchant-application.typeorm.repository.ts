@@ -97,26 +97,6 @@ export class MerchantApplicationTypeOrmRepository implements MerchantApplication
     return entities.map((e) => this.toDomain(e));
   }
 
-  async submit(domain: MerchantApplication): Promise<MerchantApplication> {
-    domain.submit();
-    return this.save(domain);
-  }
-
-  async recordRiskAssessment(
-    domain: MerchantApplication,
-    outcome: RiskStatus,
-    reference: string,
-    checkedAt: Date,
-  ): Promise<MerchantApplication> {
-    domain.recordRiskAssessment(outcome, reference, checkedAt);
-    return this.save(domain);
-  }
-
-  async markRiskReviewFailed(domain: MerchantApplication): Promise<MerchantApplication> {
-    domain.markRiskReviewFailed();
-    return this.save(domain);
-  }
-
   async save(domain: MerchantApplication): Promise<MerchantApplication> {
     const entity = await this.repo.findOneByOrFail({ id: domain.id });
     this.applyDomainToEntity(domain, entity);

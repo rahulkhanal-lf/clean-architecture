@@ -43,18 +43,19 @@ export class ProcessRiskReviewUseCase {
         rejected: RiskStatus.REJECTED,
       };
 
-      await this.repo.recordRiskAssessment(
-        app,
+      app.recordRiskAssessment(
         outcomeMap[result.outcome] ?? RiskStatus.FAILED,
         result.referenceId,
         new Date(result.checkedAt),
       );
+      await this.repo.save(app);
 
       this.logger.log(`KYB completed for ${applicationId}: ${result.outcome}`);
     } catch (err) {
       if (err instanceof KybProviderError && err.statusCode >= 400 && err.statusCode < 500) {
         this.logger.error(`KYB 4xx for ${applicationId} — marking FAILED: ${err.message}`);
-        await this.repo.markRiskReviewFailed(app);
+        app.markRiskReviewFailed();
+        await this.repo.save(app);
         throw new UnrecoverableError(err.message);
       }
 

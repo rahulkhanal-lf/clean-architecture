@@ -18,7 +18,8 @@ export class SubmitApplicationUseCase {
     const app = await this.repo.findByIdAndOwner(id, actorId);
     if (!app) throw new NotFoundException('Application not found');
 
-    const saved = await this.repo.submit(app);
+    app.submit();
+    const saved = await this.repo.save(app);
 
     try {
       await Promise.race([
