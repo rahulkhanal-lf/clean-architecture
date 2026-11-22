@@ -48,6 +48,7 @@ import { RecordDecisionDto } from './dtos/record-decision.dto.js';
 import { AssignReviewerDto } from './dtos/assign-reviewer.dto.js';
 import { MerchantApplicationResponseDto } from './dtos/responses/merchant-application.response.dto.js';
 import { AuditLogResponseDto } from './dtos/responses/audit-log.response.dto.js';
+import { ApplicationStatus } from '../../domain/application-status.enum.js';
 
 @ApiTags('merchants')
 @ApiBearerAuth('access-token')
@@ -83,14 +84,32 @@ export class MerchantsController {
   @Get()
   @Roles(Role.SALES, Role.REVIEWER, Role.ADMIN)
   @ApiOperation({
-    summary: 'List applications (role-scoped)',
-    description: 'Returns applications filtered by role:\n- **SALES**: own applications only\n- **REVIEWER**: all UNDER_REVIEW applications\n- **ADMIN**: all applications regardless of status or owner',
+    summary: 'List applications (role-scoped, paginated)',
+    description: 'Returns applications filtered by role:\n- **SALES**: own applications only\n- **REVIEWER**: all UNDER_REVIEW applications\n- **ADMIN**: all applications regardless of status or owner\n\nSupports pagination via `page` and `limit` and optional `status` filter.',
   })
-  @ApiOkResponse({ type: [MerchantApplicationResponseDto] })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (1-based)', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (max 100)', example: 20 })
+  @ApiQuery({ name: 'status', required: false, enum: ApplicationStatus, description: 'Filter by application status' })
+  @ApiOkResponse({ description: 'Paginated list of applications', schema: { properties: { data: { type: 'array', items: { $ref: '#/components/schemas/MerchantApplicationResponseDto' } }, total: { type: 'number' }, page: { type: 'number' }, limit: { type: 'number' } } } })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid Bearer token' })
-  async list(@CurrentUser() user: JwtPayload) {
-    const apps = await this.listUseCase.execute(user.sub, user.role);
-    return apps.map((a) => this.encryption.maskApplication(a));
+  async list(
+    @CurrentUser() user: JwtPayload,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: ApplicationStatus,
+  ) {
+    const opts = {
+      page: Math.max(1, parseInt(page ?? '1', 10) || 1),
+      limit: Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20)),
+      status,
+    };
+    const result = await this.listUseCase.execute(user.sub, user.role, opts);
+    return {
+      data: result.data.map((a) => this.encryption.maskApplication(a)),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    };
   }
 
   @Get('audit-logs')

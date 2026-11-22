@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { ApplicationStatus } from '../../domain/application-status.enum.js';
+import { ListOptions, PaginatedResult } from '../../application/dtos/pagination.dto.js';
 
 import { MerchantApplication } from '../../domain/merchant-application.js';
 import { OwnerInfo } from '../../domain/owner-info.js';
@@ -53,6 +54,38 @@ export class MerchantApplicationTypeOrmRepository implements MerchantApplication
   async listByStatus(status: ApplicationStatus): Promise<MerchantApplication[]> {
     const entities = await this.repo.findBy({ status });
     return entities.map((e) => this.toDomain(e));
+  }
+
+  async listAllPaginated(opts: ListOptions): Promise<PaginatedResult<MerchantApplication>> {
+    const where = opts.status ? { status: opts.status } : {};
+    const [entities, total] = await this.repo.findAndCount({
+      where,
+      skip: (opts.page - 1) * opts.limit,
+      take: opts.limit,
+      order: { createdAt: 'DESC' },
+    });
+    return { data: entities.map((e) => this.toDomain(e)), total, page: opts.page, limit: opts.limit };
+  }
+
+  async listByStatusPaginated(status: ApplicationStatus, opts: ListOptions): Promise<PaginatedResult<MerchantApplication>> {
+    const [entities, total] = await this.repo.findAndCount({
+      where: { status },
+      skip: (opts.page - 1) * opts.limit,
+      take: opts.limit,
+      order: { createdAt: 'DESC' },
+    });
+    return { data: entities.map((e) => this.toDomain(e)), total, page: opts.page, limit: opts.limit };
+  }
+
+  async listByOwnerPaginated(createdById: string, opts: ListOptions): Promise<PaginatedResult<MerchantApplication>> {
+    const where = opts.status ? { createdById, status: opts.status } : { createdById };
+    const [entities, total] = await this.repo.findAndCount({
+      where,
+      skip: (opts.page - 1) * opts.limit,
+      take: opts.limit,
+      order: { createdAt: 'DESC' },
+    });
+    return { data: entities.map((e) => this.toDomain(e)), total, page: opts.page, limit: opts.limit };
   }
 
   async findStalledApplications(): Promise<MerchantApplication[]> {

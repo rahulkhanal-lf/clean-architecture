@@ -1,6 +1,7 @@
 import { MerchantApplication } from '../../domain/merchant-application.js';
 import { ApplicationStatus } from '../../domain/application-status.enum.js';
 import { RiskStatus } from '../../domain/risk-status.enum.js';
+import { ListOptions, PaginatedResult } from '../dtos/pagination.dto.js';
 
 export abstract class MerchantApplicationRepository {
   abstract create(createdById: string): Promise<MerchantApplication>;
@@ -14,4 +15,7 @@ export abstract class MerchantApplicationRepository {
   abstract listByOwner(createdById: string): Promise<MerchantApplication[]>;
   abstract listAll(): Promise<MerchantApplication[]>;
   abstract listByStatus(status: ApplicationStatus): Promise<MerchantApplication[]>;
+  abstract listAllPaginated(opts: ListOptions): Promise<PaginatedResult<MerchantApplication>>;
+  abstract listByStatusPaginated(status: ApplicationStatus, opts: ListOptions): Promise<PaginatedResult<MerchantApplication>>;
+  abstract listByOwnerPaginated(createdById: string, opts: ListOptions): Promise<PaginatedResult<MerchantApplication>>;
 }
