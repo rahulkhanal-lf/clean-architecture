@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { KybCheckInput, KybCheckResult, KybProviderPort } from '../../application/ports/kyb-provider.port.js';
 
-const KYB_MOCK_URL = process.env['KYB_MOCK_URL'] ?? 'http://kyb-mock:4000';
-const KYB_API_KEY = process.env['KYB_MOCK_API_KEY'] ?? 'mock-api-key';
+const KYB_MOCK_URL = process.env['KYB_MOCK_URL'] ;
+const KYB_API_KEY = process.env['KYB_MOCK_API_KEY']!;
 const TIMEOUT_MS = 10_000;
 
 export class KybProviderError extends Error {
