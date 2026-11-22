@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { ApplicationStatus } from '../../domain/application-status.enum.js';
+
 import { MerchantApplication } from '../../domain/merchant-application.js';
 import { OwnerInfo } from '../../domain/owner-info.js';
 import { RiskStatus } from '../../domain/risk-status.enum.js';
@@ -41,6 +42,16 @@ export class MerchantApplicationTypeOrmRepository implements MerchantApplication
 
   async listByOwner(createdById: string): Promise<MerchantApplication[]> {
     const entities = await this.repo.findBy({ createdById });
+    return entities.map((e) => this.toDomain(e));
+  }
+
+  async listAll(): Promise<MerchantApplication[]> {
+    const entities = await this.repo.find();
+    return entities.map((e) => this.toDomain(e));
+  }
+
+  async listByStatus(status: ApplicationStatus): Promise<MerchantApplication[]> {
+    const entities = await this.repo.findBy({ status });
     return entities.map((e) => this.toDomain(e));
   }
 
@@ -102,6 +113,7 @@ export class MerchantApplicationTypeOrmRepository implements MerchantApplication
       riskCheckedAt: entity.riskCheckedAt,
       submittedAt: entity.submittedAt,
       decidedAt: entity.decidedAt,
+      decisionNotes: entity.decisionNotes,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       version: entity.version,
@@ -125,6 +137,7 @@ export class MerchantApplicationTypeOrmRepository implements MerchantApplication
     entity.riskCheckedAt = domain.riskCheckedAt;
     entity.submittedAt = domain.submittedAt;
     entity.decidedAt = domain.decidedAt;
+    entity.decisionNotes = domain.decisionNotes;
   }
 
   private encryptOwnerInfo(info: OwnerInfo): Record<string, string> {

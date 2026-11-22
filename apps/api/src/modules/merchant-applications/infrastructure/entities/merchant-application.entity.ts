@@ -76,6 +76,9 @@ export class MerchantApplicationEntity extends BaseEntity {
   @Column({ name: 'decided_at', type: 'timestamptz', nullable: true })
   decidedAt!: Date | null;
 
+  @Column({ name: 'decision_notes', type: 'varchar', nullable: true })
+  decisionNotes!: string | null;
+
   @VersionColumn()
   version!: number;
 }

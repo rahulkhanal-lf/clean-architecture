@@ -1,4 +1,5 @@
 import { MerchantApplication } from '../../domain/merchant-application.js';
+import { ApplicationStatus } from '../../domain/application-status.enum.js';
 import { RiskStatus } from '../../domain/risk-status.enum.js';
 
 export abstract class MerchantApplicationRepository {
@@ -11,4 +12,6 @@ export abstract class MerchantApplicationRepository {
   abstract recordRiskAssessment(application: MerchantApplication, outcome: RiskStatus, reference: string, checkedAt: Date): Promise<MerchantApplication>;
   abstract markRiskReviewFailed(application: MerchantApplication): Promise<MerchantApplication>;
   abstract listByOwner(createdById: string): Promise<MerchantApplication[]>;
+  abstract listAll(): Promise<MerchantApplication[]>;
+  abstract listByStatus(status: ApplicationStatus): Promise<MerchantApplication[]>;
 }

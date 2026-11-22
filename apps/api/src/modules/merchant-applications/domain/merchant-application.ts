@@ -45,6 +45,7 @@ export interface MerchantApplicationProps {
   riskCheckedAt: Date | null;
   submittedAt: Date | null;
   decidedAt: Date | null;
+  decisionNotes: string | null;
   createdAt: Date;
   updatedAt: Date;
   version: number;
@@ -76,6 +77,7 @@ export class MerchantApplication {
 
   submittedAt: Date | null;
   decidedAt: Date | null;
+  decisionNotes: string | null;
   readonly createdAt: Date;
   updatedAt: Date;
   version: number;
@@ -102,6 +104,7 @@ export class MerchantApplication {
     this.riskCheckedAt = props.riskCheckedAt;
     this.submittedAt = props.submittedAt;
     this.decidedAt = props.decidedAt;
+    this.decisionNotes = props.decisionNotes;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
     this.version = props.version;
@@ -140,27 +143,30 @@ export class MerchantApplication {
     this.riskStatus = RiskStatus.FAILED;
   }
 
-  approve(): void {
+  approve(notes?: string): void {
     if (this.status !== ApplicationStatus.UNDER_REVIEW) {
       throw new InvalidTransitionError(this.status, ApplicationStatus.APPROVED);
     }
     this.status = ApplicationStatus.APPROVED;
     this.decidedAt = new Date();
+    this.decisionNotes = notes ?? null;
   }
 
-  reject(): void {
+  reject(notes?: string): void {
     if (this.status !== ApplicationStatus.UNDER_REVIEW) {
       throw new InvalidTransitionError(this.status, ApplicationStatus.REJECTED);
     }
     this.status = ApplicationStatus.REJECTED;
     this.decidedAt = new Date();
+    this.decisionNotes = notes ?? null;
   }
 
-  requestInfo(): void {
+  requestInfo(notes?: string): void {
     if (this.status !== ApplicationStatus.UNDER_REVIEW) {
       throw new InvalidTransitionError(this.status, ApplicationStatus.INFO_REQUESTED);
     }
     this.status = ApplicationStatus.INFO_REQUESTED;
     this.decidedAt = new Date();
+    this.decisionNotes = notes ?? null;
   }
 }

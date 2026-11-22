@@ -11,6 +11,9 @@ import { ListApplicationsUseCase } from './application/use-cases/list-applicatio
 import { ProcessRiskReviewUseCase } from './application/use-cases/process-risk-review.use-case.js';
 import { SubmitApplicationUseCase } from './application/use-cases/submit-application.use-case.js';
 import { UpdateApplicationUseCase } from './application/use-cases/update-application.use-case.js';
+import { RecordDecisionUseCase } from './application/use-cases/record-decision.use-case.js';
+import { AssignReviewerUseCase } from './application/use-cases/assign-reviewer.use-case.js';
+import { RetryRiskUseCase } from './application/use-cases/retry-risk.use-case.js';
 import { MerchantApplicationEntity } from './infrastructure/entities/merchant-application.entity.js';
 import { KybHttpClient } from './infrastructure/http/kyb-http-client.js';
 import { ProcessRiskReviewProcessor } from './infrastructure/jobs/process-risk-review.processor.js';
@@ -20,6 +23,7 @@ import { MerchantApplicationTypeOrmRepository } from './infrastructure/repositor
 import { FieldEncryptionService } from './infrastructure/services/field-encryption.service.js';
 import { MerchantsController } from './presentation/http/merchants.controller.js';
 import { IdentityModule } from '../identity/identity.module.js';
+import { AuditLogModule } from '../audit-log/audit-log.module.js';
 
 @Module({
   imports: [
@@ -35,6 +39,7 @@ import { IdentityModule } from '../identity/identity.module.js';
       },
     }),
     IdentityModule,
+    AuditLogModule,
   ],
   controllers: [MerchantsController],
   providers: [
@@ -44,6 +49,9 @@ import { IdentityModule } from '../identity/identity.module.js';
     UpdateApplicationUseCase,
     SubmitApplicationUseCase,
     ProcessRiskReviewUseCase,
+    RecordDecisionUseCase,
+    AssignReviewerUseCase,
+    RetryRiskUseCase,
     ProcessRiskReviewProcessor,
     StalledReviewSweep,
     FieldEncryptionService,
