@@ -134,6 +134,7 @@ export class MerchantApplicationTypeOrmRepository implements MerchantApplication
   }
 
   private applyDomainToEntity(domain: MerchantApplication, entity: MerchantApplicationEntity): void {
+    entity.assignedReviewerId = domain.assignedReviewerId;
     entity.status = domain.status;
     entity.riskStatus = domain.riskStatus;
     entity.submissionCount = domain.submissionCount;

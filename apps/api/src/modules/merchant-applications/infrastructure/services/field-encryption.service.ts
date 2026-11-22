@@ -40,6 +40,8 @@ export class FieldEncryptionService {
   maskApplication(app: import('../../domain/merchant-application.js').MerchantApplication) {
     return {
       id: app.id,
+      createdById: app.createdById,
+      assignedReviewerId: app.assignedReviewerId,
       status: app.status,
       riskStatus: app.riskStatus,
       submissionCount: app.submissionCount,
@@ -60,10 +62,13 @@ export class FieldEncryptionService {
         : null,
       bankAccountNumber: app.bankAccountNumber ? this.mask(app.bankAccountNumber, 'bankAccount') : null,
       routingNumber: app.routingNumber ? '[REDACTED]' : null,
+      riskScore: app.riskScore,
+      riskReasons: app.riskReasons,
       riskReference: app.riskReference,
       riskCheckedAt: app.riskCheckedAt,
       submittedAt: app.submittedAt,
       decidedAt: app.decidedAt,
+      decisionNotes: app.decisionNotes,
       createdAt: app.createdAt,
       updatedAt: app.updatedAt,
     };
