@@ -10,9 +10,11 @@ import { RegisterUseCase } from './application/use-cases/register.use-case.js';
 import { UserEntity } from './infrastructure/entities/user.entity.js';
 import { UserTypeOrmRepository } from './infrastructure/repositories/user.typeorm.repository.js';
 import { BcryptPasswordHasher } from './infrastructure/services/bcrypt-password-hasher.js';
+import { JwtRefreshStrategy } from './infrastructure/strategies/jwt-refresh.strategy.js';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy.js';
 import { LocalStrategy } from './infrastructure/strategies/local.strategy.js';
 import { JwtGuard } from './guards/jwt.guard.js';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard.js';
 import { LocalAuthGuard } from './guards/local-auth.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
 import { AuthController } from './presentation/http/auth.controller.js';
@@ -33,7 +35,9 @@ import { AuthController } from './presentation/http/auth.controller.js';
     RegisterUseCase,
     LocalStrategy,
     JwtStrategy,
+    JwtRefreshStrategy,
     JwtGuard,
+    JwtRefreshGuard,
     LocalAuthGuard,
     RolesGuard,
     { provide: UserRepository, useClass: UserTypeOrmRepository },

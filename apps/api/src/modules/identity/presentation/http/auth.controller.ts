@@ -15,10 +15,11 @@ import { LoginUseCase } from '../../application/use-cases/login.use-case.js';
 import { RefreshUseCase } from '../../application/use-cases/refresh.use-case.js';
 import { RegisterUseCase } from '../../application/use-cases/register.use-case.js';
 import { JwtGuard } from '../../guards/jwt.guard.js';
+import { JwtRefreshGuard } from '../../guards/jwt-refresh.guard.js';
 import { LocalAuthGuard } from '../../guards/local-auth.guard.js';
+import { Role } from '../../domain/role.enum.js';
 import { User } from '../../domain/user.js';
 import { LoginDto } from './dtos/login.dto.js';
-import { RefreshDto } from './dtos/refresh.dto.js';
 import { RegisterDto } from './dtos/register.dto.js';
 import { AuthTokensResponseDto } from './dtos/responses/auth-tokens.response.dto.js';
 
@@ -58,13 +59,16 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtRefreshGuard)
   @ApiBearerAuth('refresh-token')
-  @ApiOperation({ summary: 'Exchange a refresh token for a new token pair' })
-  @ApiBody({ type: RefreshDto })
+  @ApiOperation({
+    summary: 'Exchange a refresh token for a new token pair',
+    description: 'Pass the refresh token as `Authorization: Bearer <refreshToken>`. Returns a fresh access token and a new refresh token.',
+  })
   @ApiOkResponse({ type: AuthTokensResponseDto, description: 'New token pair returned' })
-  @ApiUnauthorizedResponse({ description: 'Refresh token invalid or expired' })
-  refresh(@Body() body: RefreshDto) {
-    return this.refreshUseCase.execute(body.refreshToken);
+  @ApiUnauthorizedResponse({ description: 'Refresh token missing, invalid, or expired' })
+  refresh(@Request() req: ExpressRequest & { user: { sub: string; role: Role } }) {
+    return this.refreshUseCase.execute(req.user.sub, req.user.role);
   }
 
   @Post('logout')
