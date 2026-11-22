@@ -14,7 +14,14 @@ async function bootstrap() {
     .setTitle('PSP API')
     .setDescription('Payment Service Provider API')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Short-lived access token (15 min). Obtain from /auth/login or /auth/register.' },
+      'access-token',
+    )
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Long-lived refresh token (7 days). Pass to /auth/refresh to get a new token pair.' },
+      'refresh-token',
+    )
     .build();
 
   SwaggerModule.setup('docs', app, () => SwaggerModule.createDocument(app, config));

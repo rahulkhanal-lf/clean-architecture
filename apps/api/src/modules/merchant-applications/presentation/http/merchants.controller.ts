@@ -50,7 +50,7 @@ import { MerchantApplicationResponseDto } from './dtos/responses/merchant-applic
 import { AuditLogResponseDto } from './dtos/responses/audit-log.response.dto.js';
 
 @ApiTags('merchants')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('merchants')
 @UseGuards(JwtGuard, RolesGuard)
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))

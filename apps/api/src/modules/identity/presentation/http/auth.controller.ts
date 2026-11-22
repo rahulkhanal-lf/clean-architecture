@@ -58,6 +58,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('refresh-token')
   @ApiOperation({ summary: 'Exchange a refresh token for a new token pair' })
   @ApiBody({ type: RefreshDto })
   @ApiOkResponse({ type: AuthTokensResponseDto, description: 'New token pair returned' })
@@ -69,7 +70,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Logout (client-side token discard)',
     description: 'Stateless — no server-side token revocation. Client should discard both access and refresh tokens.',
