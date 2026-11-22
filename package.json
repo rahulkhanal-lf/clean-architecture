@@ -20,10 +20,10 @@
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "migration:generate": "tsx node_modules/typeorm/cli.js migration:generate -d apps/api/src/data-source.ts",
-    "migration:run": "tsx node_modules/typeorm/cli.js migration:run -d apps/api/src/data-source.ts",
-    "migration:revert": "tsx node_modules/typeorm/cli.js migration:revert -d apps/api/src/data-source.ts",
-    "migration:show": "tsx node_modules/typeorm/cli.js migration:show -d apps/api/src/data-source.ts"
+    "migration:generate": "nest build api && node node_modules/typeorm/cli.js migration:generate -d dist/apps/api/data-source.js",
+    "migration:run": "nest build api && node node_modules/typeorm/cli.js migration:run -d dist/apps/api/data-source.js",
+    "migration:revert": "nest build api && node node_modules/typeorm/cli.js migration:revert -d dist/apps/api/data-source.js",
+    "migration:show": "nest build api && node node_modules/typeorm/cli.js migration:show -d dist/apps/api/data-source.js"
   },
   "dependencies": {
     "@nestjs/bullmq": "^12.0.2",
