@@ -154,6 +154,7 @@ export class MerchantsController {
   }
 
   @Post(':id/decision')
+  @HttpCode(HttpStatus.OK)
   @Roles(Role.REVIEWER)
   @ApiOperation({
     summary: 'Record a reviewer decision (APPROVED / REJECTED / INFO_REQUESTED)',
@@ -176,6 +177,7 @@ export class MerchantsController {
   }
 
   @Post(':id/reviewer')
+  @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Assign a reviewer to an application', description: 'Sets the assignedReviewerId on the application. Assignment is recorded in the audit log.' })
   @ApiParam({ name: 'id', type: String, format: 'uuid', description: 'Application ID' })
@@ -194,6 +196,7 @@ export class MerchantsController {
   }
 
   @Post(':id/retry-risk')
+  @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Retry a failed KYB risk review', description: "Resets riskStatus from FAILED to PENDING and re-enqueues the KYB job. The application's riskStatus must currently be FAILED. Recorded in the audit log." })
   @ApiParam({ name: 'id', type: String, format: 'uuid', description: 'Application ID' })
