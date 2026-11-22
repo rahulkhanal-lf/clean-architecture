@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { createObserveModule } from '@nestjs/observe';
 import { UserEntity } from './modules/identity/infrastructure/entities/user.entity.js';
 import { MerchantApplicationEntity } from './modules/merchant-applications/infrastructure/entities/merchant-application.entity.js';
 import { AuditLogEntity } from './modules/audit-log/infrastructure/entities/audit-log.entity.js';
@@ -9,8 +8,6 @@ import { InitialSchema1700000000000 } from './migrations/1700000000000-InitialSc
 import { AddDecisionNotesAndAuditLogs1700000000001 } from './migrations/1700000000001-AddDecisionNotesAndAuditLogs.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
 import { MerchantApplicationsModule } from './modules/merchant-applications/merchant-applications.module.js';
-
-export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
 @Module({
   imports: [
