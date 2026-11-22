@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MerchantApplicationRepository } from './modules/merchant-applications/application/ports/merchant-application.repository.port.js';
 import { KybQueuePort } from './modules/merchant-applications/application/ports/kyb-queue.port.js';
 import { ProcessRiskReviewUseCase } from './modules/merchant-applications/application/use-cases/process-risk-review.use-case.js';
+import { UserEntity } from './modules/identity/infrastructure/entities/user.entity.js';
 import { MerchantApplicationEntity } from './modules/merchant-applications/infrastructure/entities/merchant-application.entity.js';
 import { KybHttpClient } from './modules/merchant-applications/infrastructure/http/kyb-http-client.js';
 import { ProcessRiskReviewProcessor } from './modules/merchant-applications/infrastructure/jobs/process-risk-review.processor.js';
@@ -39,7 +40,7 @@ import { KybProviderPort } from './modules/merchant-applications/application/por
       username: process.env['DB_USER'] ?? 'postgres',
       password: process.env['DB_PASS'] ?? 'postgres',
       database: process.env['DB_NAME'] ?? 'psp',
-      entities: [MerchantApplicationEntity],
+      entities: [UserEntity, MerchantApplicationEntity],
       synchronize: false,
     }),
     TypeOrmModule.forFeature([MerchantApplicationEntity]),

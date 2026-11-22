@@ -6,14 +6,14 @@ import { RiskStatus } from '../../domain/risk-status.enum.js';
 
 @Entity('merchant_applications')
 export class MerchantApplicationEntity extends BaseEntity {
-  @Column({ name: 'created_by_id' })
+  @Column({ name: 'created_by_id', type: 'varchar' })
   createdById!: string;
 
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'created_by_id' })
   createdBy!: UserEntity;
 
-  @Column({ name: 'assigned_reviewer_id', nullable: true })
+  @Column({ name: 'assigned_reviewer_id', type: 'varchar', nullable: true })
   assignedReviewerId!: string | null;
 
   @ManyToOne(() => UserEntity, { nullable: true })
@@ -29,19 +29,19 @@ export class MerchantApplicationEntity extends BaseEntity {
   @Column({ name: 'submission_count', default: 0 })
   submissionCount!: number;
 
-  @Column({ name: 'business_name', nullable: true })
+  @Column({ name: 'business_name', type: 'varchar', nullable: true })
   businessName!: string | null;
 
-  @Column({ name: 'legal_business_name', nullable: true })
+  @Column({ name: 'legal_business_name', type: 'varchar', nullable: true })
   legalBusinessName!: string | null;
 
-  @Column({ name: 'business_type', nullable: true })
+  @Column({ name: 'business_type', type: 'varchar', nullable: true })
   businessType!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   country!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   mcc!: string | null;
 
   @Column({ name: 'monthly_volume', type: 'numeric', nullable: true })
@@ -52,10 +52,10 @@ export class MerchantApplicationEntity extends BaseEntity {
   ownerInfo!: Record<string, string> | null;
 
   // Stores encrypted values
-  @Column({ name: 'bank_account_number', nullable: true })
+  @Column({ name: 'bank_account_number', type: 'varchar', nullable: true })
   bankAccountNumber!: string | null;
 
-  @Column({ name: 'routing_number', nullable: true })
+  @Column({ name: 'routing_number', type: 'varchar', nullable: true })
   routingNumber!: string | null;
 
   @Column({ name: 'risk_score', type: 'numeric', nullable: true })
@@ -64,7 +64,7 @@ export class MerchantApplicationEntity extends BaseEntity {
   @Column({ name: 'risk_reasons', type: 'text', array: true, nullable: true })
   riskReasons!: string[] | null;
 
-  @Column({ name: 'risk_reference', nullable: true })
+  @Column({ name: 'risk_reference', type: 'varchar', nullable: true })
   riskReference!: string | null;
 
   @Column({ name: 'risk_checked_at', type: 'timestamptz', nullable: true })

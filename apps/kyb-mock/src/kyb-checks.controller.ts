@@ -21,7 +21,6 @@ class KybCheckDto {
 }
 
 @Controller()
-@UseGuards(ApiKeyGuard)
 export class KybChecksController {
   constructor(private readonly kybChecksService: KybChecksService) {}
 
@@ -31,6 +30,7 @@ export class KybChecksController {
   }
 
   @Post('kyb/checks')
+  @UseGuards(ApiKeyGuard)
   @Throttle({ default: { limit: 10, ttl: 1000 } })
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async check(@Body() body: KybCheckDto): Promise<KybCheckResult> {
